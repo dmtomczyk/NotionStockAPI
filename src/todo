@@ -4,15 +4,6 @@
     - Determine how to store the stock information before passing it into the notion folder
 
 - PUSHING TO NOTION.SO
-    - Ensure correct token_v2 @done
-    - Ensure correct pageURL @done
-    - Test current implementation after switching to stream account @done
-    - Determine what params to push into the notion collection / table
-        - Open
-            - quoteInfo = get_quote_table(stockName).get("Open")
-        - # Shares
-        - 52 Low
-        - 52 High
     - Determine what methods are available for saving information
     - Determine why the items are not visible on the table display
 
@@ -20,6 +11,7 @@
     - Determine if I want to keep the process running
     - Abstract everything to allow others to utilize
     - Ensure inputs are valid (They exist in the notion file, or catch err)
+    - Code Coverage (Tests)
 
 NOTES:
     - Available .get() stock elements
@@ -29,3 +21,14 @@ NOTES:
         - "EPS Trend"
         - "EPS Revisions"
         - "Growth Estimate"
+
+Archive:
+    - PUSHING TO NOTION.SO @done
+        - Ensure correct token_v2 @done
+        - Ensure correct pageURL @done
+        - Test current implementation after switching to stream account @done
+        - Determine what params to push into the notion collection / table @done
+            - Open @done
+                - quoteInfo = get_quote_table(stockName).get("Open") @done
+            - 52 Low @done
+            - 52 High @done

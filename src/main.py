@@ -1,7 +1,13 @@
 from notion.client import NotionClient
 from notion.collection import *
 from yahoo_fin.stock_info import *
-from pandas import DataFrame
+
+# NOTE:
+# Available Statuses    -   { "Owned", "Pending", "Researching", "APITesting"}
+# Standard Params       -   { "shares", "status", "marketopen", "fiftytwolow", "fiftytwohigh" }
+# Common Functions      -
+#   - get_stock_info_for_one_company(collectionView, stockName, status)
+# Dependencies          -   { notion-py by jamalex, yahoo_fin, Anaconda(ftplib, io, pandas, requests, requests_html)}
 
 
 class NotionAPI:
@@ -10,11 +16,7 @@ class NotionAPI:
     def __init__(self):
         self.pageUrl = ""
 
-    # Prints the page title
-    def print_page_title(page):
-        print("The current title is:", page.title)
-
-    # Returns a dict of rows
+    # WORKING -- Returns a dict of rows
     def get_my_rows(collectionView):
         my_rows = collectionView.collection.get_rows()
         # print(my_rows)
@@ -32,18 +34,18 @@ class NotionAPI:
         row.fiftytwohigh = high
         row.marketopen = marketOpen
 
-    # Sets the page title
+    # WORKING -- Sets the page title
     def set_page_title(page):
         print("The page: %s" % (page))
         page.title = "Stock API Test #2"
 
-    # Returns the id of the collection
+    # WORKING -- Returns the id of the collection
     def get_collection_view(myClientInstance):
         collectionView = myClientInstance.get_collection_view(
             "https://www.notion.so/959730e14a554c2f967b70bccd414f0b?v=1a9d0f526c1049ebb304bfc359d2eb6f")
         return collectionView
 
-    # Queries an existing collection
+    # WORKING -- Queries an existing collection
     def query_collection(collectionView, searchParam):
         results = []
         q = CollectionQuery(collectionView.collection, collectionView, "UXIN")
@@ -51,15 +53,8 @@ class NotionAPI:
             results.append(res)
         return results
 
-    def print_query_results(array):
-        countResults = 0
-        for elem in array:
-            countResults += 1
-            print("print_query_results() #%d - %s" % (countResults, elem))
-
-    # This returns a DataFrame object (Panda)
-    # Attributes -- Use .get("Col name"), then I can grab the items per index
-    def get_stock_info_for_one_company(collView, name):
+    # WORKING -- This returns a DataFrame object (Panda) -- Attributes -- Use .get("Col name"), then I can grab the items per index
+    def get_stock_info_for_one_company(collView, name, status):
 
         # Declaring empty list that will store the results of our query
         stockResults = []
@@ -77,7 +72,7 @@ class NotionAPI:
 
         # PUSHING our info to the notion page
         NotionAPI.add_stock_info(
-            collView, "APITEST", "Owned", 8, fiftyTwoLow, fiftyTwoHigh, marketOpen)
+            collView, name, status, 8, fiftyTwoLow, fiftyTwoHigh, marketOpen)
 
 
 def main():
@@ -87,15 +82,13 @@ def main():
     myClientInstance = NotionClient(
         token_v2="7f142fc772b9196c819854cc5a21666999c2e3accaa201b9fb40495b23ba66984966676769a93a81122b35b9b94baa51f02f45c39823d9eef1c3c81a4a410f97d88d344471e110f9f298a26cf5ad")
 
-    # Returns the "collection view" and stores in collectionView
+    # TESTING -- Returns the "collection view" and stores in collectionView
     collectionView = NotionAPI.get_collection_view(myClientInstance)
     print("collectionView = %s" % collectionView)
 
-    # Stock testing
+    # TESTING
     stockInfoRetrieved = NotionAPI.get_stock_info_for_one_company(
-        collectionView, "UXIN")
-    # NotionAPI.tempTest(collectionView, stockInfoRetrieved)
-    # NotionAPI.get_my_rows(collectionView)
+        collectionView, "UXIN", "Owned")
 
 
 if __name__ == "__main__":
