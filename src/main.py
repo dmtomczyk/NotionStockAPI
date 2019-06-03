@@ -1,6 +1,7 @@
 from notion.client import NotionClient
 from notion.collection import *
 from yahoo_fin.stock_info import *
+from pandas import DataFrame
 
 
 class NotionAPI:
@@ -9,33 +10,27 @@ class NotionAPI:
     def __init__(self):
         self.pageUrl = ""
 
-    # Main Constructor
-    @classmethod
-    def my_collection(cls, inputUrl, client):
-        # Sets the notion pageUrl to be used later
-        pageUrl = inputUrl
-        # Creates our page object using the page url
-        page = client.get_block(inputUrl)
-
     # Prints the page title
     def print_page_title(page):
         print("The current title is:", page.title)
 
     # Returns a dict of rows
-    def get_my_rows(cv):
-        my_rows = cv.collection.get_rows()
-        print(my_rows)
+    def get_my_rows(collectionView):
+        my_rows = collectionView.collection.get_rows()
+        # print(my_rows)
         return my_rows
 
-    # Adds stock info to row
-    def add_stock_info(cv, client, stockDict):
-        print("Adding new row...")
+    # WORKING -- Adds stock info to row
+    def add_stock_info(collectionView, name, status, shares, low, high, marketOpen):
+
         # Add a new record
-        row = cv.collection.add_row()
-        row.name = "API Testing"
-        row.status = "APITesting"
-        # row.tags = ["A", "C"]
-        # row.where_to = "https://learningequality.org"
+        row = collectionView.collection.add_row()
+        row.name = name
+        row.status = status
+        row.shares = shares
+        row.fiftytwolow = low
+        row.fiftytwohigh = high
+        row.marketopen = marketOpen
 
     # Sets the page title
     def set_page_title(page):
@@ -44,13 +39,14 @@ class NotionAPI:
 
     # Returns the id of the collection
     def get_collection_view(myClientInstance):
-        cv = myClientInstance.get_collection_view(
-            "https://www.notion.so/44b1c9b0207b4c0db87ff24ccbded57a?v=c817cfaca39b4e8fba9abdcbdb84705b")
-        return cv
+        collectionView = myClientInstance.get_collection_view(
+            "https://www.notion.so/959730e14a554c2f967b70bccd414f0b?v=1a9d0f526c1049ebb304bfc359d2eb6f")
+        return collectionView
 
-    def query_collection(cv, searchParam):
+    # Queries an existing collection
+    def query_collection(collectionView, searchParam):
         results = []
-        q = CollectionQuery(cv.collection, cv, "UXIN")
+        q = CollectionQuery(collectionView.collection, collectionView, "UXIN")
         for res in q.execute():
             results.append(res)
         return results
@@ -61,33 +57,46 @@ class NotionAPI:
             countResults += 1
             print("print_query_results() #%d - %s" % (countResults, elem))
 
+    # This returns a DataFrame object (Panda)
+    # Attributes -- Use .get("Col name"), then I can grab the items per index
+    def get_stock_info_for_one_company(collView, name):
+
+        # Declaring empty list that will store the results of our query
+        stockResults = []
+
+        # Setting our stock name and pulling from yahoo finance
+        stockName = name
+        stockInfo = get_stats(stockName)
+
+        # PULLS "52 Low" & "52 High" from yahoo. -- https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.at.html#pandas.DataFrame.at
+        fiftyTwoLow = float(stockInfo.at[35, "Value"])
+        fiftyTwoHigh = float(stockInfo.at[34, "Value"])
+
+        # PULLS "Open" value from yahoo finance
+        marketOpen = float(get_quote_table(stockName).get("Open"))
+
+        # PUSHING our info to the notion page
+        NotionAPI.add_stock_info(
+            collView, "APITEST", "Owned", 8, fiftyTwoLow, fiftyTwoHigh, marketOpen)
+
 
 def main():
 
-    # Default values
-    notionPageURL = "https://www.notion.so/44b1c9b0207b4c0db87ff24ccbded57a?v=c817cfaca39b4e8fba9abdcbdb84705b"
+    # NOTE: These are for a test account of mine that is not hooked up to anything else, though I would appreciate not using my token
+    notionPageURL = "https://www.notion.so/959730e14a554c2f967b70bccd414f0b?v=1a9d0f526c1049ebb304bfc359d2eb6f"
     myClientInstance = NotionClient(
-        token_v2="05c8397ff8f2a208df71c2c89d12a857b3b25fa546eeff51415f77228b2f6d105c50220121a4d202e7c8e44aaff8e7323968b9129a9b46caad9d6500b474cd105fe29645c49e0fb2e36cd3bceb9e")
+        token_v2="7f142fc772b9196c819854cc5a21666999c2e3accaa201b9fb40495b23ba66984966676769a93a81122b35b9b94baa51f02f45c39823d9eef1c3c81a4a410f97d88d344471e110f9f298a26cf5ad")
 
-    # Returns the "collection view" and stores in cv
-    cv = NotionAPI.get_collection_view(myClientInstance)
-    print("cv = %s" % cv)
-
-    # Returns array of results
-    searchParam = "UXIN"
-    queryColView = NotionAPI.query_collection(cv, searchParam)
-    NotionAPI.print_query_results(queryColView)
+    # Returns the "collection view" and stores in collectionView
+    collectionView = NotionAPI.get_collection_view(myClientInstance)
+    print("collectionView = %s" % collectionView)
 
     # Stock testing
-    uxinInfo = get_analysts_info("UXIN")
-    stockEarnings = uxinInfo.get("Earnings Estimate")
-    print(stockEarnings)
-    NotionAPI.add_stock_info(cv, myClientInstance, stockEarnings)
-    NotionAPI.get_my_rows(cv)
-
-    # Adding stock information to Notion
+    stockInfoRetrieved = NotionAPI.get_stock_info_for_one_company(
+        collectionView, "UXIN")
+    # NotionAPI.tempTest(collectionView, stockInfoRetrieved)
+    # NotionAPI.get_my_rows(collectionView)
 
 
-# Python Protecting
 if __name__ == "__main__":
     main()

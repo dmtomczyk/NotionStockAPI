@@ -1,0 +1,31 @@
+- PULLING STOCK INFO
+    - Utilize yahoo_fin to pull info from yahoo finance @done
+    - Abstract the stock calls to functions that take the stock as a param
+    - Determine how to store the stock information before passing it into the notion folder
+
+- PUSHING TO NOTION.SO
+    - Ensure correct token_v2 @done
+    - Ensure correct pageURL @done
+    - Test current implementation after switching to stream account @done
+    - Determine what params to push into the notion collection / table
+        - Open
+            - quoteInfo = get_quote_table(stockName).get("Open")
+        - # Shares
+        - 52 Low
+        - 52 High
+    - Determine what methods are available for saving information
+    - Determine why the items are not visible on the table display
+
+- TODOS
+    - Determine if I want to keep the process running
+    - Abstract everything to allow others to utilize
+    - Ensure inputs are valid (They exist in the notion file, or catch err)
+
+NOTES:
+    - Available .get() stock elements
+        - "Earnings Estimate"
+        - "Revenue Estimate"
+        - "Earnings History"
+        - "EPS Trend"
+        - "EPS Revisions"
+        - "Growth Estimate"
